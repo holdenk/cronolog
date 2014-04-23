@@ -1,7 +1,7 @@
-CRONOLOG FORK version 1.7
+CRONOLOG FORK version 1.7.1
 
 This is a fork of the original cronolog based on patches in debian &
-on the cronolog website.
+on the cronolog website. This is only somewhat maintained.
 
 Note: this includes a fix to handle >2GB log files
 
@@ -87,6 +87,9 @@ The main line cronolog can be found at:
 
 	http://www.ford-mason.co.uk/resources/cronolog/
 
+This fork can be found at:
+
+     	https://github.com/holdenk/cronolog
 
 INSTALLATION
 ============
