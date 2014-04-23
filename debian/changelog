@@ -1,0 +1,150 @@
+cronolog (1.7-1) unstable; urgency=low
+
+  * Merge in all the patches
+    fix 2GB file issue
+    add rolling gzip support
+
+ -- Holden Karau <holden@pigscanfly.ca>  Wed, 23 Apr 2014 16:57:59 -0800
+
+cronolog (1.6.2+rpk-1) unstable; urgency=low
+
+  * RePacKaging of orig.tar.gz to change source tarball in the archive.
+    (was a tarball-in-tarball source archive, for dbs use)
+
+ -- Maxime Chatelle <mmyc@gmx.com>  Tue, 14 Jun 2011 23:47:39 +0200
+
+cronolog (1.6.2-6) unstable; urgency=low
+
+  * New Maintainer: Maxime Chatelle <mmyc@gmx.com> (Closes: #465934).
+  * Upgraded to Policy 3.9.2.
+  * Upgraded to "3.0 (quilt)" package format and full rewrite of 
+    debian/rules, removing dbs build dependency (Closes: #576045).
+  * cronolog manpage: typo error fixed (050_cronolog_manpage_typo.diff)
+    (Closes: #217554).
+  * cronosplit manpage: add some precisions about supported formats
+    (060_cronosplit_manpage_correction.diff)(Closes: #217566).
+  * removed "030_define_xopen_source.diff" patch and use CFLAGS in
+    debian/rules instead (see 1.6.2-5.1, was #323425).
+  * added -D_FILE_OFFSET_BITS=64 in CFLAGS for large file support
+    (Closes: #304626).
+  * removed the, now very old, wrapper in /usr/sbin (see 1.6.2-3).
+  * errors fixed in manpages (070_manpages_fixes.diff)
+  * --utime option added to cronosplit (Closes: #370297).
+
+ -- Maxime Chatelle <mmyc@gmx.com>  Mon, 4 Jun 2011 14:49:57 +0200
+
+cronolog (1.6.2-5.3) unstable; urgency=low
+
+  * Porter NMU.
+  * Update config.guess/config.sub at build-time (Closes: #331428).
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 10 Dec 2006 23:45:56 +0100
+
+cronolog (1.6.2-5.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * cronosplit bugfixes:
+    * Print content of invalid lines.
+    * Also split error logfiles. (Closes: #241492)
+    * Safe open for input files/pipes.
+  * cronosplit improvements:
+    * use strict;
+    * Use strftime for template conversion.
+    * Add processing of bzip2 compressed logfiles.
+  * Incorporate the above changes + 020_cronosplit_HMS.diff into new
+    040_cronosplit.diff.
+
+ -- Christoph Biedl <cbiedl@gmx.de>  Sun,  4 Jun 2006 13:20:49 +0200
+
+cronolog (1.6.2-5.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Define _XOPEN_SOURCE to fix an implicitly converted pointer.
+    Closes: #323425
+
+ -- dann frazier <dannf@debian.org>  Tue, 27 Sep 2005 00:36:07 -0600
+
+cronolog (1.6.2-5) unstable; urgency=low
+
+  * Upgraded to Policy 3.6.1.
+  * Corrected patch 020_cronosplit_HMS.diff to also patch cronosplit.in
+    (we don't regenerate anything, so it isn't crucial, but it's good to
+    keep things in sync).
+  * Added upstream ChangeLog, NEWS, README, and TODO files to the doc
+    directory. (Closes: #241487)
+
+ -- Joel Baker <fenton@debian.org>  Mon,  5 Apr 2004 20:54:01 -0600
+
+cronolog (1.6.2-4) unstable; urgency=low
+
+  * Upgraded to Policy 3.6.0.
+  * Fixed a problem in cronosplit which caused %M and %S templates to go
+    haywire. (Closes: #203372)
+
+ -- Joel Baker <fenton@debian.org>  Tue, 29 Jul 2003 22:44:10 -0600
+
+cronolog (1.6.2-3) unstable; urgency=low
+
+  * Changed documentation to point to /usr/bin, and added a wrapper
+    script in /usr/sbin that throws a message to STDERR warning about
+    the deprecated location. The wrapper can be dropped after the next
+    major release. (Closes: #193822)
+  * Patch cronolog.info to be in section 'Administrative commands'; next
+    upstream release will put it there anyway. (Closes: #193350)
+
+ -- Joel Baker <fenton@debian.org>  Mon, 19 May 2003 13:27:10 -0600
+
+cronolog (1.6.2-2) unstable; urgency=low
+
+  * Fixed /usr/info stupidity in cronolog.dirs; I need to hook
+    lintian/linda into my pbuilder runs.
+
+ -- Joel Baker <fenton@debian.org>  Wed, 14 May 2003 12:50:51 -0600
+
+cronolog (1.6.2-1) unstable; urgency=low
+
+  * New Maintainer: Joel Baker <fenton@debian.org>. (Closes: #192662)
+  * New upstream release.
+  * Acknowlege periodicity NMU (even if NMUs shouldn't normally change
+    upstream versions). Version 1.6.2 shows no obvious reversion.
+    (Closes: #66482)
+  * Complete rewrite (from scratch) of debian/rules.
+  * Added a Build-Depend on debhelper (>= 4). (Closes: #189112)
+  * Switched to using DBS for the build system.
+  * Run 'make check' for the dejagnu testsuite.
+  * Manually move cronolog and cronosplit from /usr/sbin to /usr/bin,
+    since I agree that they probably belong there. (Closes: #138990)
+  * Moved http.conf to README.Debian, and added some introductory
+    comments.
+
+ -- Joel Baker <fenton@debian.org>  Wed, 14 May 2003 11:50:00 -0600
+
+cronolog (1.6.1-0.1) unstable; urgency=medium
+
+  * NMU
+  * New upstream release
+  * Periodicity is calculated correctly, closes: #66482 (important)
+
+ -- Piotr Roszatycki <dexter@debian.org>  Fri,  7 Jul 2000 13:40:46 +0200
+
+cronolog (1.5b9-2) unstable; urgency=low
+
+  * Merges perl upgrade NMU, closes: #41494.
+  * Updated to Standards-Version: 3.0.1.1.
+
+ -- Johnie Ingram <johnie@debian.org>  Mon,  6 Sep 1999 11:02:02 -0500
+
+cronolog (1.5b9-1.1) unstable; urgency=low
+
+  * NMU for the perl upgrade. Closes: #41494
+  * Corrected the perl dependency.
+  * Upgraded standards-version.
+  * Stripped executables.
+
+ -- Raphael Hertzog <rhertzog@hrnet.fr>  Sat, 24 Jul 1999 00:46:38 +0200
+
+cronolog (1.5b9-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Johnie Ingram <johnie@debian.org>  Tue, 16 Jun 1998 14:59:47 -0400
