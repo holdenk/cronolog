@@ -31,6 +31,9 @@ debian/files
 testsuite/Makefile
 src/cronolog
 src/cronoutils
-
+debian/cronolog.debhelper.log
+debian/cronolog.substvars
+src/cronotest
+debian/cronolog/*
 #Emacs
 .*~
