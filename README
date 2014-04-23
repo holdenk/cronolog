@@ -1,4 +1,7 @@
-CRONOLOG version 1.6.1
+CRONOLOG FORK version 1.7
+
+This is a fork of the original cronolog based on patches in debian &
+on the cronolog website.
 
 "cronolog" is a simple program that reads log messages from its input
 and writes them to a set of output files, the names of which are
@@ -76,7 +79,9 @@ new file (creating missing directories on the path of the new log file
 as needed unless the program is compiled with -DDONT_CREATE_SUBDIRS)
 and calculates the time at which the new file will become invalid.
 
-The most up-to-date version of "cronolog" can be found at:
+User specified programs can be run after rotation using the -G param.
+
+The main line cronolog can be found at:
 
 	http://www.ford-mason.co.uk/resources/cronolog/
 
