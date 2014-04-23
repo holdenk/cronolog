@@ -122,6 +122,7 @@ my $outfile;
 my $template;
 my $debug;
 my $verbose;
+my $utime;
 my $PrintInvalids;
 my $print_help;
 my $print_version;
@@ -129,11 +130,13 @@ my $handle;
 
 my %OpenHandles = ();
 my @HandlesInUse = ();
+my %utimes = ();
 
 # Process options
 
 (GetOptions("template=s",	\$template,
 	    "print-invalid",	\$PrintInvalids,
+	    "utime",		\$utime,
 	    "debug",            \$debug,
 	    "verbose",          \$verbose,
 	    "help",             \$print_help,
@@ -176,6 +179,7 @@ Usage: $program --template=TEMPLATE [OPTIONS] file ...
 
   --template=TEMPLATE   output log-file template
   --print-invalid       print invalid log-file entries
+  --utime               update mtime of output files to last entry
   --help                print this help, then exit
   --version             print version number, then exit
 EOS
@@ -264,6 +268,17 @@ foreach $file (@ARGV) {
     close(INFILE);
 }
 
+# close any open files
+foreach my $oldkey (@HandlesInUse)
+{
+    $handle = $OpenHandles{$oldkey};
+     close $handle;
+    if ($utime)
+    {
+	my $mtime = $utimes{$oldkey};
+	utime $mtime, $mtime, $oldkey;
+    }
+}
 
 # Get a file handle for a log file, closing the oldest handle if there
 # are too many handles open
@@ -279,6 +294,14 @@ sub get_handle
     my(@time) = localtime($time_t);
     $file =~ s/(%[a-zA-Z%])/strftime($1, @time)/eg;
 
+    if ($utime)
+    {
+	if (!defined ($utimes{$file}) || $time_t > $utimes{$file})
+	{
+	    $utimes{$file} = $time_t;
+	}
+    }
+
     # See if we already have it open and ready to write
     
     return $handle if defined($handle = $OpenHandles{$file});
@@ -289,8 +312,13 @@ sub get_handle
     {
         my ($oldkey) = shift @HandlesInUse;   # close the oldest
         $handle = $OpenHandles{$oldkey};
-        delete $OpenHandles{$oldkey};
         close $handle;
+	if ($utime)
+	{
+	    my $mtime = $utimes{$oldkey};
+	    utime $mtime, $mtime, $oldkey;
+	}
+        delete $OpenHandles{$oldkey};
     }
 
     # Finally, try to open and remember a new handle for this pathkey
