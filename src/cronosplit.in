@@ -70,26 +70,38 @@
 # (splitlog is part of the wwwstat package,
 #  see <http://www.ics.uci.edu/pub/websoft/wwwstat/>)
 
+require 5.8.0;
 
 use Getopt::Long;
+use Time::Local;
+use POSIX qw(strftime);
 
-$program    = 'cronosplit';
-$version    = '@VERSION@';
+use strict;
+
+my $program    = 'cronosplit';
+my $version    = '@VERSION@';
+
+# Programs
+
+my $ZCAT = '/bin/zcat';
+my $BZCAT = '/usr/bin/bzcat';
 
 # Parameters
 
-$MaxHandles = 50;
-$DirMode    = 0775;
-
+my $MaxHandles = 50;
+my $DirMode    = 0775;
 
 # Patterns for log file entries (Common Log Format) and timestamps
 
-$log_entry_pattern = "^(\\S+) (\\S+) ([^[]+) \\[([^]]*)] \"([^\"]*)\" (\\S+) (\\S+)(.*)";
-$timestamp_pattern = "^([ 0-3]?\\d)/([A-Za-z]+)/(\\d{4}):(\\d\\d):(\\d\\d):(\\d\\d) [+ -]\\d{1,4}";
+my $access_log_entry_pattern = "^(\\S+) (\\S+) ([^[]+) \\[([^]]*)] \"([^\"]*)\" (\\S+) (\\S+)(.*)";
+my $access_timestamp_pattern = "^([ 0-3]?\\d)/([A-Za-z]+)/(\\d{4}):(\\d\\d):(\\d\\d):(\\d\\d) [+ -]\\d{1,4}";
+
+my $error_log_entry_pattern = "^\\[([^]]*)] \\[([^]]*)] (\\S+)(.*)";
+my $error_timestamp_pattern = "^[A-Z][a-z]{2} ([A-Z][a-z]{2}) ([0-3]?\\d) (\\d\\d):(\\d\\d):(\\d\\d) (\\d{4})";
 
 # An associative array of month names and abbreviations
 
-%month = (Jan => 1,  January   => 1,
+my %month = (Jan => 1,  January   => 1,
 	  Feb => 2,  February  => 2,
 	  Mar => 3,  March     => 3,
 	  Apr => 4,  April     => 4,
@@ -102,15 +114,21 @@ $timestamp_pattern = "^([ 0-3]?\\d)/([A-Za-z]+)/(\\d{4}):(\\d\\d):(\\d\\d):(\\d\
 	  Nov => 11, November  => 11,
 	  Dec => 12, December  => 12);
 
-@month = ("", "January", "February", "March", "April", "May", "June",
-	  "July", "August", "September", "October", "November", "December");
-@mmm   = ("", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-	  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 
-@days  = ("Sunday", "Monday", "Tuesday", "Wednesday",
-	  "Thursday", "Friday", "Saturday");
-@ddd   = ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+# Variables
 
+my $file;
+my $outfile;
+my $template;
+my $debug;
+my $verbose;
+my $PrintInvalids;
+my $print_help;
+my $print_version;
+my $handle;
+
+my %OpenHandles = ();
+my @HandlesInUse = ();
 
 # Process options
 
@@ -170,25 +188,37 @@ EOS
 
 push(@ARGV, "-") unless @ARGV;
 
-
  FILE:
 foreach $file (@ARGV) {
     if ($file eq "-") {
 	print STDERR "reading from STDIN\n" if $verbose;
 	*INFILE = *STDIN;
-    } 
+    }
     elsif ($file =~ /\.gz$/) {
 	print STDERR "opening \"$file\"\n" if $verbose;
 	
-	if (!open(INFILE, "zcat $file|")) {
+	if (!open(INFILE, "-|", $ZCAT, $file)) {
+	    print STDERR "cannot open \"$file\"\n";
+	    next FILE;
+	}
+    }
+    elsif ($file =~ /\.bz2$/) {
+	if (! -x $BZCAT)
+	{
+	    print STDERR "Cannot process \"$file\", install bzip2 first.\n";
+	    next FILE;
+	}
+	print STDERR "opening \"$file\"\n" if $verbose;
+
+	if (!open(INFILE, "-|", $BZCAT, $file)) {
 	    print STDERR "cannot open \"$file\"\n";
 	    next FILE;
 	}
     }
     else {
 	print STDERR "opening \"$file\"\n" if $verbose;
-	
-	if (! open(INFILE, $file)) {
+
+	if (! open(INFILE, "<$file")) {
 	    print STDERR "cannot open \"$file\"\n";
 	    next FILE;
 	}
@@ -201,32 +231,34 @@ foreach $file (@ARGV) {
   LINE:
     while (<INFILE>)
     {
-	my($host, $ident, $authuser, $timestamp,
-	   $request, $status, $bytes, $trailer) = /$log_entry_pattern/;
-	
-	if (!($host && $ident && $authuser && $timestamp && $request && $status))
-        {
-            if ($PrintInvalids) { print STDERR "$.:$saveline"; }
-            next LINE;
-        }
-
-        if ($timestamp =~ /$timestamp_pattern/) 
+	my ($timestamp, $time_t);
+	if (/$access_log_entry_pattern/)
 	{
-            ($day, $mon, $year, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
-        }
-        else
+	    $timestamp = $4;
+	    if ($timestamp =~ /$access_timestamp_pattern/)
+	    {
+		# 1:day 2:month 3:year 4:hour 5:minute 6:second
+		$time_t = eval { timelocal($6, $5, $4, $1, $month{$2} - 1, $3 - 1900) };
+	    }
+	}
+	elsif (/$error_log_entry_pattern/)
+	{
+	    $timestamp = $1;
+	    if ($timestamp =~ /$error_timestamp_pattern/)
+	    {
+		# 1:month 2:day 3:hour 4:minute 5:second 6:year
+		$time_t = eval { timelocal($5, $4, $3, $2, $month{$1} - 1, $6 - 1900) };
+	    }
+	}
+        if (!defined ($time_t))
         {
-            if ($PrintInvalids) { print STDERR "$.:$saveline"; }
+            if ($PrintInvalids) { print STDERR "$.:$_"; }
             next LINE;
         }
 
-        next LINE unless defined($outfile = &get_handle($template,
-							$day, $mon, $year,
-							$hour, $min, $sec));
+        next LINE unless defined($outfile = &get_handle($template, $time_t));
 
-        print($outfile $host, ' ', $ident, ' ', $authuser,
-	      ' [', $timestamp, '] "', $request, '" ',
-	      $status, ' ', $bytes, $trailer, "\n");
+        print($outfile $_);
 
     }
     close(INFILE);
@@ -238,22 +270,14 @@ foreach $file (@ARGV) {
 
 sub get_handle
 {
-    my($template, $day, $mon, $year, $hour, $min, $sec) = @_;
-    $mon = $month{$mon};
+    my($template, $time_t) = @_;
 
 
     # Determine the filename from the template and time
 
     my($file) = $template;
-    $file =~ s/%Y/sprintf("%04d", $year)/eg;
-    $file =~ s/%m/sprintf("%02d", $mon)/eg;
-    $file =~ s/%d/sprintf("%02d", $day)/eg;
-    $file =~ s/%b/$mmm[$mon]/g;
-    $file =~ s/%B/$month[$mon]/g;
-    $file =~ s/%H/sprintf("%02d", $hour)/eg;
-    $file =~ s/%M/sprintf("%02m", $min)/eg;
-    $file =~ s/%S/sprintf("%02m", $sec)/eg;
-    
+    my(@time) = localtime($time_t);
+    $file =~ s/(%[a-zA-Z%])/strftime($1, @time)/eg;
 
     # See if we already have it open and ready to write
     
@@ -263,7 +287,7 @@ sub get_handle
 
     if (($#HandlesInUse + 1) >= $MaxHandles)
     {
-        local($oldkey) = shift @HandlesInUse;   # close the oldest
+        my ($oldkey) = shift @HandlesInUse;   # close the oldest
         $handle = $OpenHandles{$oldkey};
         delete $OpenHandles{$oldkey};
         close $handle;
@@ -271,7 +295,7 @@ sub get_handle
 
     # Finally, try to open and remember a new handle for this pathkey
 
-    $handle = ++$NextHandle;
+    undef $handle;
 
     make_dirs($file);
 
@@ -321,7 +345,7 @@ sub make_dirs
 
     # Check each directory on the path
 
-    foreach $i  (0 .. $#path)
+    foreach my $i  (0 .. $#path)
     {
 	$path = $abs . join("/", (@path[0 .. $i]));
 	print(STDERR "Testing $path\n") if $debug;
