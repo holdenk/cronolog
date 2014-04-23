@@ -29,7 +29,7 @@ checks the time to see whether the current log file is still valid and
 if not it closes the current file, expands the template using the
 current date and time to generate a new file name, opens the new file
 (creating missing directories on the path of the new log file as
-needed unless the program is compiled with -DDONT_CREATE_SUBDIRS) and
+needed unless the program is compiled with \-DDONT_CREATE_SUBDIRS) and
 calculates the time at which the new file will become invalid.
 .PP
 .B cronolog
@@ -37,8 +37,8 @@ is intended to be used in conjunction with a Web server, such as
 Apache to split the access log into daily or monthly logs.  For
 example the Apache configuration directives:
 .LP
-        TransferLog "|/www/sbin/cronolog /www/logs/%Y/%m/%d/access.log"
-        ErrorLog    "|/www/sbin/cronolog /www/logs/%Y/%m/%d/errors.log"
+        TransferLog "|/usr/bin/cronolog /www/logs/%Y/%m/%d/access.log"
+        ErrorLog    "|/usr/bin/cronolog /www/logs/%Y/%m/%d/errors.log"
 .LP
 would instruct Apache to pipe its access and error log messages into
 separate copies of cronolog, which would create new log files each day
@@ -59,7 +59,7 @@ did not allow a program to be specified as the argument of the
 ErrorLog directive.)
 
 .SH Options
-.C cronolog
+.B cronolog
 accepts the following options and arguments:
 .\"
 .IP "-H \fINAME\fP"
@@ -85,8 +85,8 @@ to the previous log file.  Requires that the
 option is specified, as cronolog renames the current link to the name
 specified for the previous link.
 .\"
-.IP -h
-.IP --help
+.IP "-h"
+.IP "--help"
 print a help message and then exit.
 .\"
 .IP "-p \fIPERIOD\fP"
@@ -129,19 +129,19 @@ month are reversed if the american option is specified).  If the
 seconds are omitted then they are taken as zero and if the hours and
 minutes are omitted then the time of day is taken as 00:00:00
 (i.e. midnight).  The day, month and year can be separated by spaces,
-hyphens (-) or solidi (/).
+hyphens (\-) or solidi (/).
 .\"
-.IP -a
-.IP --american
+.IP "-a"
+.IP "--american"
 Interprete the date part of the starting time the American way (month
 then day).
-.IP -e
-.IP --european
+.IP "-e"
+.IP "--european"
 Interprete the date part of the starting time the European way (day
 then month).  This is the default.
 .\"
-.IP -v
-.IP --version
+.IP "-v"
+.IP "--version"
 print version information and exit.
 .\"
 .\"
@@ -159,7 +159,7 @@ followed by one of the following characters:
 .IP %
 a literal % character
 .IP n
-a new-line character
+a new\-line character
 .IP t
 a horizontal tab character
 .PP
@@ -226,7 +226,7 @@ More information and the latest version of
 .B cronolog 
 can be obtained from
 .LP
-        http://www.ford-mason.co.uk/resources/cronolog/
+        http://www.ford\-mason.co.uk/resources/cronolog/
 .LP
 If you have any suggestions, bug reports, fixes, or enhancements,
 please mail them to the author.
@@ -245,7 +245,7 @@ the case where multiple log streams are written to the same file
 (template), for example where different virtual servers write to the
 same set of log files.
 .SH AUTHOR
-Andrew Ford <A.Ford@ford-mason.co.uk>
+Andrew Ford <A.Ford@ford\-mason.co.uk>
 .LP
 .B cronolog
 is based on a program called

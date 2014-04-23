@@ -11,13 +11,15 @@ cronosplit \- split log files into cronolog-compatible files
 .\"
 .SH SYNOPSIS
 .B cronosplit
---template=TEMPLATE [--print-invalid] [--help] [--version] file ...
+\-\-template=TEMPLATE [\-\-print\-invalid] [\-\-help] [\-\-version] file ...
 .\"
 .SH DESCRIPTION
 .B cronosplit
 is a simple program that reads lines from a set of input log files,
 which must be in
 .I "Common Log Format"
+or
+.I "NCSA Combined/XLF/ELF Format"
 and write each lines to an output files, the name of which is
 constructed using the
 .B template
@@ -28,11 +30,13 @@ command (which are the same as the standard C strftime library
 function).
 .\"
 .SH Options
-.C cronosplit
+.B cronosplit
 accepts the following options and arguments:
 .IP "--template=\fITEMPLATE\fP"
 specifies the template for the output log files (using the format
 specifiers described below).
+.IP "--print-invalid"
+print invalid log file entries to the standard error stream.
 .IP "--verbose"
 print additional status messages to the standard error stream.
 .IP "--debug"
@@ -50,7 +54,7 @@ followed by one of the following characters:
 .IP %
 a literal % character
 .IP n
-a new-line character
+a new\-line character
 .IP t
 a horizontal tab character
 .PP
@@ -120,7 +124,7 @@ and
 .B cronosplit
 can be obtained from
 .LP
-        http://www.ford-mason.co.uk/resources/cronolog/
+        http://www.ford\-mason.co.uk/resources/cronolog/
 .LP
 If you have any suggestions, bug reports, fixes, or enhancements,
 please mail them to the author.
@@ -129,7 +133,7 @@ Documentation for the Apache http server is available from
 .LP
         http://www.apache.org
 .SH AUTHOR
-Andrew Ford <A.Ford@ford-mason.co.uk>
+Andrew Ford <A.Ford@ford\-mason.co.uk>
 .LP
 .B cronosplit
 is based on a script called
