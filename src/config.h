@@ -1,6 +1,6 @@
 /*
  * config.h -- configuration definitions  for the cronolog program
- * $Id: config.h 1 2008-10-10 09:33:46Z pengdw $
+ * $Id: config.h,v 1.3 2003/12/01 23:00:33 mgrosso Exp $
  *
  * Copyright (C) 1996-1998 by Ford & Mason Ltd.
  *
@@ -19,6 +19,13 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#define CRONOLOG_HAS_SETREUID 1
+
+#ifdef  _PATH_BSHELL 
+#define PATH_BSHELL _PATH_BSHELL
+#else
+#define PATH_BSHELL "/bin/sh"
+#endif
 
 /* Size of read buffer and filename buffer */
 

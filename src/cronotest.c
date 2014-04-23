@@ -248,7 +248,7 @@ main(int argc, char **argv, char **envp)
 	printf("\"%s\"\n", filename);
 	if (test_subdir_creation)
 	{
-	    create_subdirs(filename);
+	    create_subdirs(filename, DIR_MODE );
 	}
 	time_now = start_of_next_period(time_now, periodicity, period_multiple) + period_delay;
     }

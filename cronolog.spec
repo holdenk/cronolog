@@ -1,5 +1,5 @@
 %define name cronolog
-%define version 1.6.2
+%define version 1.7
 %define release 1
 %define group System Networking/Daemons
 

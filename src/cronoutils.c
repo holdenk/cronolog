@@ -79,18 +79,18 @@ extern char *tzname[2];
 /* debug_file is the file to output debug messages to.  No debug
  * messages are output if it is set to NULL. 
  */
-FILE	*debug_file = NULL;
+FILE    *debug_file = NULL;
 
 
 /* America and Europe disagree on whether weeks start on Sunday or
  * Monday - weeks_start_on_mondays is set if a %U specifier is encountered.
  */
-int	weeks_start_on_mondays = 0;
+int    weeks_start_on_mondays = 0;
 
 
 /* periods[] is an array of the names of the periods.
  */
-char	*periods[] = 
+char    *periods[] = 
 {
     "second",
     "minute",
@@ -99,12 +99,12 @@ char	*periods[] =
     "week",
     "month",
     "year",
-    "aeon"	/* i.e. once only */
+    "aeon"    /* i.e. once only */
 };
 
 /* period_seconds[] is an array of the number of seconds in a period.
  */
-int	period_seconds[] = 
+int    period_seconds[] = 
 {
     1,
     60,
@@ -128,56 +128,56 @@ int	period_seconds[] =
  * log period, but it might as well be done. 
  */
 void
-create_subdirs(char *filename)
+create_subdirs(char *filename, mode_t dirmode)
 {
 #ifndef CHECK_ALL_PREFIX_DIRS
-    static char	lastpath[MAX_PATH] = "";
+    static char    lastpath[MAX_PATH] = "";
 #endif
     struct stat stat_buf;
-    char	dirname[MAX_PATH];
-    char	*p;
+    char    dirname[MAX_PATH];
+    char    *p;
     
     DEBUG(("Creating missing components of \"%s\"\n", filename));
     for (p = filename; (p = strchr(p, '/')); p++)
     {
-	if (p == filename)
-	{
-	    continue;	    /* Don't bother with the root directory */
-	}
-	
-	memcpy(dirname, filename, p - filename);
-	dirname[p-filename] = '\0';
-	
+    if (p == filename)
+    {
+        continue;	    /* Don't bother with the root directory */
+    }
+    
+    memcpy(dirname, filename, p - filename);
+    dirname[p-filename] = '\0';
+    
 #ifndef CHECK_ALL_PREFIX_DIRS
-	if (strncmp(dirname, lastpath, strlen(dirname)) == 0)
-	{
-	    DEBUG(("Initial prefix \"%s\" known to exist\n", dirname));
-	    continue;
-	}
+    if (strncmp(dirname, lastpath, strlen(dirname)) == 0)
+    {
+        DEBUG(("Initial prefix \"%s\" known to exist\n", dirname));
+        continue;
+    }
 #endif
 
-	DEBUG(("Testing directory \"%s\"\n", dirname));
-	if (stat(dirname, &stat_buf) < 0)
-	{
-	    if (errno != ENOENT)
-	    {
-		perror(dirname);
-		exit(2);
-	    }
-	    else
-	    {
-		DEBUG(("Directory \"%s\" does not exist -- creating\n", dirname));
-		if ((mkdir(dirname, DIR_MODE) < 0) && (errno != EEXIST))
+    DEBUG(("Testing directory \"%s\"\n", dirname));
+    if (stat(dirname, &stat_buf) < 0)
+    {
+        if (errno != ENOENT)
+        {
+    	perror(dirname);
+    	exit(2);
+        }
+        else
+        {
+            DEBUG(("Directory \"%s\" does not exist -- creating\n", dirname));
+            if ((mkdir(dirname, dirmode) < 0) && (errno != EEXIST))
 #ifndef _WIN32
-		{
+            {
 #else
                 if ((mkdir(dirname) < 0) && (errno != EEXIST))
 #endif
-		    perror(dirname);
-		    exit(2);
-		}
-	    }
-	}
+                    perror(dirname);
+                    exit(2);
+            }
+        }
+    }
     }
 #ifndef CHECK_ALL_PREFIX_DIRS
     strcpy(lastpath, dirname);
@@ -190,32 +190,32 @@ create_subdirs(char *filename)
  */
 void
 create_link(char *pfilename, 
-	    const char *linkname, mode_t linktype,
-	    const char *prevlinkname)
+        const char *linkname, mode_t linktype,
+        const char *prevlinkname)
 {
-    struct stat		stat_buf;
+    struct stat    	stat_buf;
     
     if (lstat(prevlinkname, &stat_buf) == 0)
     {
-	unlink(prevlinkname);
+    unlink(prevlinkname);
     }
     if (lstat(linkname, &stat_buf) == 0)
     {
-	if (prevlinkname) {
-	    rename(linkname, prevlinkname);
-	}
-	else {
-	    unlink(linkname);
-	}
+    if (prevlinkname) {
+        rename(linkname, prevlinkname);
+    }
+    else {
+        unlink(linkname);
+    }
     }
 #ifndef _WIN32
     if (linktype == S_IFLNK)
     {
-	symlink(pfilename, linkname);
+    symlink(pfilename, linkname);
     }
     else
     {
-	link(pfilename, linkname);
+    link(pfilename, linkname);
     }
 #else
     fprintf(stderr, "Creating link from %s to %s not supported", pfilename, linkname);
@@ -229,97 +229,97 @@ create_link(char *pfilename,
 PERIODICITY
 determine_periodicity(char *spec)
 {
-    PERIODICITY	periodicity = ONCE_ONLY;
-    char 	ch;
+    PERIODICITY    periodicity = ONCE_ONLY;
+    char     ch;
     
     DEBUG(("Determining periodicity of \"%s\"\n", spec));
     while ((ch = *spec++) != 0)
     {
-	if (ch == '%')
-	{
-	    ch = *spec++;
-	    if (!ch) break;
-	    
-	    switch (ch)
-	    {
-	    case 'y':		/* two digit year */
-	    case 'Y':		/* four digit year */
-		if (periodicity > YEARLY)
-		{
-		    DEBUG(("%%%c -> yearly\n", ch));
-		    periodicity = YEARLY;
-		}
-		break;
+    if (ch == '%')
+    {
+        ch = *spec++;
+        if (!ch) break;
+        
+        switch (ch)
+        {
+        case 'y':		/* two digit year */
+        case 'Y':		/* four digit year */
+    	if (periodicity > YEARLY)
+    	{
+    	    DEBUG(("%%%c -> yearly\n", ch));
+    	    periodicity = YEARLY;
+    	}
+    	break;
 
-	    case 'b':		/* abbreviated month name */
-	    case 'h':		/* abbreviated month name (non-standard) */
-	    case 'B':		/* full month name */
-	    case 'm':		/* month as two digit number (with
-				   leading zero) */
-		if (periodicity > MONTHLY)
-		{
-		    DEBUG(("%%%c -> monthly\n", ch));
-		    periodicity = MONTHLY;
-		}
-  	        break;
-		
-	    case 'U':		/* week number (weeks start on Sunday) */
-	    case 'W':		/* week number (weeks start on Monday) */
-	        if (periodicity > WEEKLY)
-		{
-		    DEBUG(("%%%c -> weeky\n", ch));
-		    periodicity = WEEKLY;
-		    weeks_start_on_mondays = (ch == 'W');
-		}
-		break;
-		
-	    case 'a':		/* abbreviated weekday name */
-	    case 'A':		/* full weekday name */
-	    case 'd':		/* day of the month (with leading zero) */
-	    case 'e':		/* day of the month (with leading space -- non-standard) */
-	    case 'j':		/* day of the year (with leading zeroes) */
-	    case 'w':		/* day of the week (0-6) */
-	    case 'D':		/* full date spec (non-standard) */
-	    case 'x':		/* full date spec */
-	        if (periodicity > DAILY)
-		{
-		    DEBUG(("%%%c -> daily\n", ch));
-		    periodicity = DAILY;
-		}
-  	        break;
-	    
-	    case 'H':		/* hour (24 hour clock) */
-	    case 'I':		/* hour (12 hour clock) */
-	    case 'p':		/* AM/PM indicator */
-	        if (periodicity > HOURLY)
-		{
-		    DEBUG(("%%%c -> hourly\n", ch));
-		    periodicity = HOURLY;
-		}
-		break;
-		
-	    case 'M':		/* minute */
-	        if (periodicity > PER_MINUTE)
-		{
-		    DEBUG(("%%%c -> per minute\n", ch));
-		    periodicity = PER_MINUTE;
-		}
-		break;
-		
-	    case 'S':		/* second */
-	    case 's':		/* seconds since the epoch (GNU non-standard) */
-	    case 'c':		/* full time and date spec */
-	    case 'T':		/* full time spec */
-	    case 'r':		/* full time spec (non-standard) */
-	    case 'R':		/* full time spec (non-standard) */
-		DEBUG(("%%%c -> per second", ch));
-		periodicity = PER_SECOND;
+        case 'b':		/* abbreviated month name */
+        case 'h':		/* abbreviated month name (non-standard) */
+        case 'B':		/* full month name */
+        case 'm':		/* month as two digit number (with
+    			   leading zero) */
+    	if (periodicity > MONTHLY)
+    	{
+    	    DEBUG(("%%%c -> monthly\n", ch));
+    	    periodicity = MONTHLY;
+    	}
+              break;
+    	
+        case 'U':		/* week number (weeks start on Sunday) */
+        case 'W':		/* week number (weeks start on Monday) */
+            if (periodicity > WEEKLY)
+    	{
+    	    DEBUG(("%%%c -> weeky\n", ch));
+    	    periodicity = WEEKLY;
+    	    weeks_start_on_mondays = (ch == 'W');
+    	}
+    	break;
+    	
+        case 'a':		/* abbreviated weekday name */
+        case 'A':		/* full weekday name */
+        case 'd':		/* day of the month (with leading zero) */
+        case 'e':		/* day of the month (with leading space -- non-standard) */
+        case 'j':		/* day of the year (with leading zeroes) */
+        case 'w':		/* day of the week (0-6) */
+        case 'D':		/* full date spec (non-standard) */
+        case 'x':		/* full date spec */
+            if (periodicity > DAILY)
+    	{
+    	    DEBUG(("%%%c -> daily\n", ch));
+    	    periodicity = DAILY;
+    	}
+              break;
+        
+        case 'H':		/* hour (24 hour clock) */
+        case 'I':		/* hour (12 hour clock) */
+        case 'p':		/* AM/PM indicator */
+            if (periodicity > HOURLY)
+    	{
+    	    DEBUG(("%%%c -> hourly\n", ch));
+    	    periodicity = HOURLY;
+    	}
+    	break;
+    	
+        case 'M':		/* minute */
+            if (periodicity > PER_MINUTE)
+    	{
+    	    DEBUG(("%%%c -> per minute\n", ch));
+    	    periodicity = PER_MINUTE;
+    	}
+    	break;
+    	
+        case 'S':		/* second */
+        case 's':		/* seconds since the epoch (GNU non-standard) */
+        case 'c':		/* full time and date spec */
+        case 'T':		/* full time spec */
+        case 'r':		/* full time spec (non-standard) */
+        case 'R':		/* full time spec (non-standard) */
+    	DEBUG(("%%%c -> per second", ch));
+    	periodicity = PER_SECOND;
 
-	    default:		/* ignore anything else */
-		DEBUG(("ignoring %%%c\n", ch));
-	        break;
-	    }
-	}
+        default:		/* ignore anything else */
+    	DEBUG(("ignoring %%%c\n", ch));
+            break;
+        }
+    }
     }
     return periodicity;
 }
@@ -329,9 +329,9 @@ determine_periodicity(char *spec)
 PERIODICITY 
 parse_timespec(char *optarg, int *p_period_multiple)
 {
-    PERIODICITY		periodicity	= INVALID_PERIOD;
-    int			period_multiple = 1;
-    char 		*p = optarg;
+    PERIODICITY    	periodicity	= INVALID_PERIOD;
+    int    		period_multiple = 1;
+    char     	*p = optarg;
     
     /* Skip leading whitespace */
     
@@ -341,12 +341,12 @@ parse_timespec(char *optarg, int *p_period_multiple)
     /* Parse a digit string */
     
     if (isdigit(*p)) {
-	period_multiple = *p++ - '0';
-	
-	while (isdigit(*p)) {
-	    period_multiple *= 10;
-	    period_multiple += (*p++ - '0');
-	}
+    period_multiple = *p++ - '0';
+    
+    while (isdigit(*p)) {
+        period_multiple *= 10;
+        period_multiple += (*p++ - '0');
+    }
     }
 
     
@@ -355,34 +355,34 @@ parse_timespec(char *optarg, int *p_period_multiple)
     while (isspace(*p)) { p++; }
     
     if (strncasecmp(p, "sec", 3) == 0) {
-	if (period_multiple < 60) {
-	    periodicity = PER_SECOND;
-	}
+    if (period_multiple < 60) {
+        periodicity = PER_SECOND;
+    }
     }
     else if (strncasecmp(p, "min", 3) == 0) {
-	if (period_multiple < 60) {
-	    periodicity = PER_MINUTE;
-	}
+    if (period_multiple < 60) {
+        periodicity = PER_MINUTE;
+    }
     }
     else if (strncasecmp(p, "hour", 4) == 0) {
-	if (period_multiple < 24) {
-	    periodicity = HOURLY;
-	}
+    if (period_multiple < 24) {
+        periodicity = HOURLY;
+    }
     }
     else if (strncasecmp(p, "day", 3) == 0) {
-	if (period_multiple <= 31) {
-	    periodicity = DAILY;
-	}
+    if (period_multiple <= 31) {
+        periodicity = DAILY;
+    }
     }
     else if (strncasecmp(p, "week", 4) == 0) {
-	if (period_multiple < 53) {
-	    periodicity = WEEKLY;
-	}
+    if (period_multiple < 53) {
+        periodicity = WEEKLY;
+    }
     }
     else if (strncasecmp(p, "mon", 3) == 0) {
-	if (period_multiple <= 12) {
-	    periodicity = MONTHLY;
-	}
+    if (period_multiple <= 12) {
+        periodicity = MONTHLY;
+    }
     }
     *p_period_multiple = period_multiple;
     return periodicity;
@@ -398,41 +398,41 @@ parse_timespec(char *optarg, int *p_period_multiple)
 time_t
 start_of_next_period(time_t time_now, PERIODICITY periodicity, int period_multiple)
 {
-    time_t	start_time;
+    time_t    start_time;
     
     switch (periodicity)
     {
     case YEARLY:
-	start_time = (time_now + 366 * SECS_PER_DAY + DST_ALLOWANCE);
-	break;
+    start_time = (time_now + 366 * SECS_PER_DAY + DST_ALLOWANCE);
+    break;
 
     case MONTHLY:
-	start_time = (time_now + 31 * SECS_PER_DAY + DST_ALLOWANCE);
-	break;
+    start_time = (time_now + 31 * SECS_PER_DAY + DST_ALLOWANCE);
+    break;
 
     case WEEKLY:
-	start_time = (time_now + SECS_PER_WEEK + DST_ALLOWANCE);
-	break;
-	
+    start_time = (time_now + SECS_PER_WEEK + DST_ALLOWANCE);
+    break;
+    
     case DAILY:
-	start_time = (time_now + SECS_PER_DAY + DST_ALLOWANCE);
-	break;
-	
+    start_time = (time_now + SECS_PER_DAY + DST_ALLOWANCE);
+    break;
+    
     case HOURLY:
-	start_time = time_now + period_multiple * SECS_PER_HOUR + LEAP_SECOND_ALLOWANCE;
-	break;
+    start_time = time_now + period_multiple * SECS_PER_HOUR + LEAP_SECOND_ALLOWANCE;
+    break;
 
     case PER_MINUTE:
-	start_time = time_now + period_multiple * SECS_PER_MIN + LEAP_SECOND_ALLOWANCE;
-	break;
+    start_time = time_now + period_multiple * SECS_PER_MIN + LEAP_SECOND_ALLOWANCE;
+    break;
 
     case PER_SECOND:
-	start_time = time_now + 1;
-	break;
+    start_time = time_now + 1;
+    break;
 
     default:
-	start_time = FAR_DISTANT_FUTURE;
-	break;
+    start_time = FAR_DISTANT_FUTURE;
+    break;
     }
     return start_of_this_period(start_time, periodicity, period_multiple);
 }
@@ -447,9 +447,9 @@ start_of_next_period(time_t time_now, PERIODICITY periodicity, int period_multip
 time_t
 start_of_this_period(time_t start_time, PERIODICITY periodicity, int period_multiple)
 {
-    struct tm	tm_initial;
-    struct tm	tm_adjusted;
-    int		expected_mday;
+    struct tm    tm_initial;
+    struct tm    tm_adjusted;
+    int    	expected_mday;
     
 #ifndef _WIN32
     localtime_r(&start_time, &tm_initial);
@@ -471,114 +471,114 @@ start_of_this_period(time_t start_time, PERIODICITY periodicity, int period_mult
     case MONTHLY:
     case WEEKLY:
     case DAILY:
-	switch (periodicity)
-	{
-	case YEARLY:
-	    start_time -= (  (tm_initial.tm_yday * SECS_PER_DAY)
-			   + (tm_initial.tm_hour * SECS_PER_HOUR)
-			   + (tm_initial.tm_min  * SECS_PER_MIN)
-			   + (tm_initial.tm_sec));
-	    expected_mday = 1;
-	    break;
+    switch (periodicity)
+    {
+    case YEARLY:
+        start_time -= (  (tm_initial.tm_yday * SECS_PER_DAY)
+    		   + (tm_initial.tm_hour * SECS_PER_HOUR)
+    		   + (tm_initial.tm_min  * SECS_PER_MIN)
+    		   + (tm_initial.tm_sec));
+        expected_mday = 1;
+        break;
 
-	case MONTHLY:
-	    start_time -= (  ((tm_initial.tm_mday - 1) * SECS_PER_DAY)
-			   + ( tm_initial.tm_hour      * SECS_PER_HOUR)
-			   + ( tm_initial.tm_min       * SECS_PER_MIN)
-			   + ( tm_initial.tm_sec));
-	    expected_mday = 1;
-	    break;
-	    
-	case WEEKLY:
-	    if (weeks_start_on_mondays)
-	    {
-		tm_initial.tm_wday = (6 + tm_initial.tm_wday) % 7;
-	    }
-	    start_time -= (  (tm_initial.tm_wday * SECS_PER_DAY)
-			   + (tm_initial.tm_hour * SECS_PER_HOUR)
-			   + (tm_initial.tm_min  * SECS_PER_MIN)
-			   + (tm_initial.tm_sec));
-	    expected_mday = tm_initial.tm_mday;
-	    break;
-	
-	case DAILY:
-	    start_time -= (  (tm_initial.tm_hour * SECS_PER_HOUR)
-			   + (tm_initial.tm_min  * SECS_PER_MIN )
-			   +  tm_initial.tm_sec);
-	    expected_mday = tm_initial.tm_mday;
-	    break;
+    case MONTHLY:
+        start_time -= (  ((tm_initial.tm_mday - 1) * SECS_PER_DAY)
+    		   + ( tm_initial.tm_hour      * SECS_PER_HOUR)
+    		   + ( tm_initial.tm_min       * SECS_PER_MIN)
+    		   + ( tm_initial.tm_sec));
+        expected_mday = 1;
+        break;
+        
+    case WEEKLY:
+        if (weeks_start_on_mondays)
+        {
+    	tm_initial.tm_wday = (6 + tm_initial.tm_wday) % 7;
+        }
+        start_time -= (  (tm_initial.tm_wday * SECS_PER_DAY)
+    		   + (tm_initial.tm_hour * SECS_PER_HOUR)
+    		   + (tm_initial.tm_min  * SECS_PER_MIN)
+    		   + (tm_initial.tm_sec));
+        expected_mday = tm_initial.tm_mday;
+        break;
+    
+    case DAILY:
+        start_time -= (  (tm_initial.tm_hour * SECS_PER_HOUR)
+    		   + (tm_initial.tm_min  * SECS_PER_MIN )
+    		   +  tm_initial.tm_sec);
+        expected_mday = tm_initial.tm_mday;
+        break;
 
-	default:
-	    fprintf(stderr, "software fault in start_of_this_period()\n");
-	    exit(1);
-	}
+    default:
+        fprintf(stderr, "software fault in start_of_this_period()\n");
+        exit(1);
+    }
 
-	/* If the time of day is not equal to midnight then we need to
-	 * adjust for daylight saving time.  Adjust the time backwards
-	 * by the value of the hour, minute and second fields.  If the
-	 * day of the month is not as expected one then we must have
-	 * adjusted back to the previous day so add 24 hours worth of
-	 * seconds.  
-	 */
+    /* If the time of day is not equal to midnight then we need to
+     * adjust for daylight saving time.  Adjust the time backwards
+     * by the value of the hour, minute and second fields.  If the
+     * day of the month is not as expected one then we must have
+     * adjusted back to the previous day so add 24 hours worth of
+     * seconds.  
+     */
 #ifndef _WIN32
-	localtime_r(&start_time, &tm_adjusted);    
+    localtime_r(&start_time, &tm_adjusted);    
 #else
-	tempTime = localtime(&start_time);
-	if (NULL != tempTime)
-	{
-	    memcpy(&tm_adjusted, tempTime, sizeof(struct tm));
-	    
-	    free(tempTime);
-	    tempTime = NULL;
-	}
+    tempTime = localtime(&start_time);
+    if (NULL != tempTime)
+    {
+        memcpy(&tm_adjusted, tempTime, sizeof(struct tm));
+        
+        free(tempTime);
+        tempTime = NULL;
+    }
 #endif    
-	if (   (tm_adjusted.tm_hour != 0)
-	    || (tm_adjusted.tm_min  != 0)
-	    || (tm_adjusted.tm_sec  != 0))
-	{
-	    char	sign   = '-';
-	    time_t      adjust = - (  (tm_adjusted.tm_hour * SECS_PER_HOUR)
-				    + (tm_adjusted.tm_min  * SECS_PER_MIN)
-				    + (tm_adjusted.tm_sec));
+    if (   (tm_adjusted.tm_hour != 0)
+        || (tm_adjusted.tm_min  != 0)
+        || (tm_adjusted.tm_sec  != 0))
+    {
+        char	sign   = '-';
+        time_t      adjust = - (  (tm_adjusted.tm_hour * SECS_PER_HOUR)
+    			    + (tm_adjusted.tm_min  * SECS_PER_MIN)
+    			    + (tm_adjusted.tm_sec));
 
-	    if (tm_adjusted.tm_mday != expected_mday)
-	    {
-		adjust += SECS_PER_DAY;
-		sign = '+';
-	    }
-	    start_time += adjust;
+        if (tm_adjusted.tm_mday != expected_mday)
+        {
+    	adjust += SECS_PER_DAY;
+    	sign = '+';
+        }
+        start_time += adjust;
 
-	    if (adjust < 0)
-	    {
-		adjust = -adjust;
-	    }
-	    
-	    DEBUG(("Adjust for dst: %02d/%02d/%04d %02d:%02d:%02d -- %c%0d:%02d:%02d\n",
-		   tm_initial.tm_mday, tm_initial.tm_mon+1, tm_initial.tm_year+1900,
-		   tm_initial.tm_hour, tm_initial.tm_min,   tm_initial.tm_sec, sign,
-		   adjust / SECS_PER_HOUR, (adjust / 60) % 60, adjust % SECS_PER_HOUR));
-	}
-	break;
+        if (adjust < 0)
+        {
+    	adjust = -adjust;
+        }
+        
+        DEBUG(("Adjust for dst: %02d/%02d/%04d %02d:%02d:%02d -- %c%0d:%02d:%02d\n",
+    	   tm_initial.tm_mday, tm_initial.tm_mon+1, tm_initial.tm_year+1900,
+    	   tm_initial.tm_hour, tm_initial.tm_min,   tm_initial.tm_sec, sign,
+    	   adjust / SECS_PER_HOUR, (adjust / 60) % 60, adjust % SECS_PER_HOUR));
+    }
+    break;
 
     case HOURLY:
-	start_time -= (tm_initial.tm_sec + tm_initial.tm_min * SECS_PER_MIN);
-	if (period_multiple > 1) {
-	    start_time -= SECS_PER_HOUR * (tm_initial.tm_hour -
-					   period_multiple * (tm_initial.tm_hour / period_multiple));
-	}
-	break;
+    start_time -= (tm_initial.tm_sec + tm_initial.tm_min * SECS_PER_MIN);
+    if (period_multiple > 1) {
+        start_time -= SECS_PER_HOUR * (tm_initial.tm_hour -
+    				   period_multiple * (tm_initial.tm_hour / period_multiple));
+    }
+    break;
 
     case PER_MINUTE:
-	start_time -= tm_initial.tm_sec;
-	if (period_multiple > 1) {
-	    start_time -= SECS_PER_MIN * (tm_initial.tm_min -
-					  period_multiple * (tm_initial.tm_min / period_multiple));
-	}
-	break;
+    start_time -= tm_initial.tm_sec;
+    if (period_multiple > 1) {
+        start_time -= SECS_PER_MIN * (tm_initial.tm_min -
+    				  period_multiple * (tm_initial.tm_min / period_multiple));
+    }
+    break;
 
-    case PER_SECOND:	/* No adjustment needed */
+    case PER_SECOND:    /* No adjustment needed */
     default:
-	break;
+    break;
     }
     return start_time;
 }
@@ -624,14 +624,14 @@ check_end(const char *p)
    tested it on). */
 
 static char *european_date_formats[] = 
-{	
-    "%d %b %Y %T",       	/* dd mmm yyyy HH:MM:SS */
-    "%d %b %Y %H:%M",       	/* dd mmm yyyy HH:MM    */
-    "%d %b %Y",       		/* dd mmm yyyy          */
-    "%d-%b-%Y %T",       	/* dd-mmm-yyyy HH:MM:SS */
-    "%d-%b-%Y %H:%M",       	/* dd-mmm-yyyy HH:MM    */
-    "%d-%b-%y %T",       	/* dd-mmm-yy   HH:MM:SS */
-    "%d-%b-%y %H:%M",  		/* dd-mmm-yy   HH:MM    */
+{    
+    "%d %b %Y %T",           /* dd mmm yyyy HH:MM:SS */
+    "%d %b %Y %H:%M",           /* dd mmm yyyy HH:MM    */
+    "%d %b %Y",           	/* dd mmm yyyy          */
+    "%d-%b-%Y %T",           /* dd-mmm-yyyy HH:MM:SS */
+    "%d-%b-%Y %H:%M",           /* dd-mmm-yyyy HH:MM    */
+    "%d-%b-%y %T",           /* dd-mmm-yy   HH:MM:SS */
+    "%d-%b-%y %H:%M",      	/* dd-mmm-yy   HH:MM    */
     "%d-%b-%Y",
     "%b %d %T %Y",
     "%b %d %Y",
@@ -639,12 +639,12 @@ static char *european_date_formats[] =
 };
 
 static char *american_date_formats[] = 
-{	
-    "%b %d %Y %T",       	/* dd mmm yyyy HH:MM:SS */
-    "%b %d %Y %H:%M",       	/* dd mmm yyyy HH:MM    */
-    "%b %d %Y",       		/* dd mmm yyyy          */
-    "%b-%d-%Y %T",       	/* dd-mmm-yyyy HH:MM:SS */
-    "%b-%d-%Y %H:%M",       	/* dd-mmm-yyyy HH:MM    */
+{    
+    "%b %d %Y %T",           /* dd mmm yyyy HH:MM:SS */
+    "%b %d %Y %H:%M",           /* dd mmm yyyy HH:MM    */
+    "%b %d %Y",           	/* dd mmm yyyy          */
+    "%b-%d-%Y %T",           /* dd-mmm-yyyy HH:MM:SS */
+    "%b-%d-%Y %H:%M",           /* dd-mmm-yyyy HH:MM    */
     "%b-%d-%Y",
     "%b/%d/%Y %T",
     "%b/%d/%Y %H:%M",
@@ -658,20 +658,20 @@ time_t
 parse_time(char *time_str, int use_american_date_formats)
 {
    struct tm    tm;
-   char		**date_formats;
+   char    	**date_formats;
    
    memset(&tm, 0, sizeof (tm));
    tm.tm_isdst = -1;
    
    
    for (date_formats = (use_american_date_formats
-			? american_date_formats
-			: european_date_formats);
-	*date_formats;
-	date_formats++)
+    		? american_date_formats
+    		: european_date_formats);
+    *date_formats;
+    date_formats++)
    {
        if (check_end((const char *)strptime(time_str, *date_formats, &tm)))
-	   return mktime_from_utc(&tm);
+       return mktime_from_utc(&tm);
    }
    
    return -1;
@@ -684,7 +684,7 @@ parse_time(char *time_str, int use_american_date_formats)
 void
 print_debug_msg(char *msg, ...)
 {
-    va_list	ap;
+    va_list    ap;
     
     va_start(ap, msg);
     vfprintf(debug_file, msg, ap);
@@ -697,10 +697,10 @@ print_debug_msg(char *msg, ...)
 char *
 timestamp(time_t thetime)
 {
-    static int	index = 0;
-    static char	buffer[4][80];
-    struct tm	*tm;
-    char	*retval;
+    static int    index = 0;
+    static char    buffer[4][80];
+    struct tm    *tm;
+    char    *retval;
 
     retval = buffer[index++];
     index %= 4;
@@ -710,4 +710,50 @@ timestamp(time_t thetime)
     return retval;
 }
 
-    
+
+#ifndef _WIN32
+/* Turn a string specifying either a username or UID into an actual
+ * uid_t for use in setuid(). A string is assumed to be a UID if
+ * it contains only decimal digits. */
+uid_t
+parse_uid(char *user, char *argv0)
+{
+    char    	*probe = user;
+    struct passwd    *ent;
+
+    while (*probe && isdigit(*probe)) {
+    probe++;
+    }
+    if (!(*probe)) {
+    return atoi(user);
+    }
+    if (!(ent = getpwnam(user))) {
+    fprintf(stderr, "%s: Bad username %s\n", argv0, user);
+    exit(1);
+    }
+    return (ent->pw_uid);
+}
+
+
+/* Turn a string specifying either a group name or GID into an actual
+ * gid_t for use in setgid(). A string is assumed to be a GID if
+ * it contains only decimal digits. */
+gid_t
+parse_gid(char *group, char *argv0)
+{
+    char    	*probe = group;
+    struct group    *ent;
+
+    while (*probe && isdigit(*probe)) {
+    probe++;
+    }
+    if (!(*probe)) {
+    return atoi(group);
+    }
+    if (!(ent = getgrnam(group))) {
+    fprintf(stderr, "%s: Bad group name %s\n", argv0, group);
+    exit(1);
+    }
+    return (ent->gr_gid);
+}
+#endif /* _WIN32 */
