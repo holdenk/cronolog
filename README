@@ -3,6 +3,8 @@ CRONOLOG FORK version 1.7
 This is a fork of the original cronolog based on patches in debian &
 on the cronolog website.
 
+Note: this includes a fix to handle >2GB log files
+
 "cronolog" is a simple program that reads log messages from its input
 and writes them to a set of output files, the names of which are
 constructed using template and the current date and time.  The
