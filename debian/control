@@ -1,0 +1,27 @@
+Source: cronolog
+Section: web
+Priority: optional
+Build-Depends: debhelper (>= 8.0), dejagnu, autotools-dev
+Standards-Version: 3.9.2
+Maintainer: Holden Karau <holden@pigscanfly.ca>
+Homepage: http://www.cronolog.org/
+
+Package: cronolog
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
+Description: Logfile rotator for web servers
+ A simple program that reads log messages from its input and writes
+ them to a set of output files, the names of which are constructed
+ using template and the current date and time.  The template uses the
+ same format specifiers as the Unix date command (which are the same
+ as the standard C strftime library function).
+ .
+ It intended to be used in conjunction with a Web server, such as
+ Apache, to split the access log into daily or monthly logs:
+ .
+   TransferLog "|/usr/bin/cronolog /var/log/apache/%Y/access.%Y.%m.%d.log"
+ .
+ A cronosplit script is also included, to convert existing
+ traditionally-rotated logs into this rotation format.
+ .
+ Note: this is custom hacked version, you probably don't want this

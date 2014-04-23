@@ -556,6 +556,9 @@ uninstall-am: uninstall-info-am
 
 uninstall-info: uninstall-info-recursive
 
+dpkg:
+	dpkg-buildpackage -us -uc
+
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
 	check-DEJAGNU check-am clean clean-generic clean-recursive \
 	ctags ctags-recursive dist dist-all dist-bzip2 dist-gzip \
@@ -569,7 +572,7 @@ uninstall-info: uninstall-info-recursive
 	maintainer-clean maintainer-clean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-info-am
+	uninstall uninstall-am uninstall-info-am dpkg
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
