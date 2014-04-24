@@ -4,6 +4,7 @@ This is a fork of the original cronolog based on patches in debian &
 on the cronolog website. This is only somewhat maintained.
 
 Note: this includes a fix to handle >2GB log files
+Note: you can compress on rotate with -G gzip
 
 "cronolog" is a simple program that reads log messages from its input
 and writes them to a set of output files, the names of which are
