@@ -79,7 +79,7 @@ use POSIX qw(strftime);
 use strict;
 
 my $program    = 'cronosplit';
-my $version    = '1.7.0';
+my $version    = '1.7.1';
 
 # Programs
 
