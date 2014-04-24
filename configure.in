@@ -25,8 +25,9 @@ dnl
 
 AC_REVISION($Revision: 1.1.1.1 $)
 
-AC_INIT(COPYING)
-AM_INIT_AUTOMAKE(cronolog, 1.7.0)	dnl  PACKAGE and VERSION initialized here!!
+AC_INIT(cronolog, 1.7.0)	dnl  PACKAGE and VERSION initialized here!!
+AC_CONFIG_SRCDIR(COPYING)
+AM_INIT_AUTOMAKE
 AC_ARG_PROGRAM
 
 
