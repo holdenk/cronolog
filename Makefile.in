@@ -760,6 +760,9 @@ ps-am:
 
 uninstall-am:
 
+deb:
+	dpkg-buildpackage
+
 .MAKE: $(am__recursive_targets) check-am install-am install-strip
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
@@ -776,7 +779,7 @@ uninstall-am:
 	install-strip installcheck installcheck-am installdirs \
 	installdirs-am maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am tags \
-	tags-am uninstall uninstall-am
+	tags-am uninstall uninstall-am deb
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
