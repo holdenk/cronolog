@@ -68,14 +68,14 @@
  * Originally written by Andrew Ford <A.Ford@ford-mason.co.uk>
  *
  */
-
+#ifdef _WIN32
+#define _GNU_SOURCE
+#include "strptime.h"
+#endif
 #include "cronoutils.h"
 extern char *tzname[2];
 
 
-#ifdef _WIN32
-#include "strptime.h"
-#endif
 /* debug_file is the file to output debug messages to.  No debug
  * messages are output if it is set to NULL. 
  */
