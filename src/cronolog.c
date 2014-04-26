@@ -236,11 +236,11 @@ main(int argc, char **argv)
     int     log_fd = -1;
     int     no_alarm = 0;
 
-    memset( handler, '\0', MAX_PATH );
-    memset( handler_arg, '\0', MAX_PATH );
-    memset( filename, '\0', MAX_PATH );
-    // 13 is length of .happypandas
-    memset( lockfilename, '\0', MAX_PATH+13 );
+    memset( handler, '\0', MAX_PATH+1 );
+    memset( handler_arg, '\0', MAX_PATH+1 );
+    memset( filename, '\0', MAX_PATH+1 );
+    // 13 is length of .happypandas , 14 with \0 :)
+    memset( lockfilename, '\0', MAX_PATH+14 );
 
 #ifndef _WIN32
     while ((ch = getopt_long(argc, argv, short_options, long_options, NULL)) != EOF)
@@ -341,11 +341,11 @@ main(int argc, char **argv)
         }
         break;
     case 'r':
-            strncat(handler, optarg, MAX_PATH );
+            strncat(handler, optarg, MAX_PATH - strlen(handler) );
             use_handler=1;
             break;
     case 'G':
-            strncat(handler_arg, optarg, MAX_PATH );
+            strncat(handler_arg, optarg, MAX_PATH - strlen(handler) );
             use_handler_arg=1;
             break;
     case 'n':
