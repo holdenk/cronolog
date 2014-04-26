@@ -1,3 +1,11 @@
+cronolog (1.7.2) unstable; urgency=low
+
+  * Fix buffer overflow
+    fix 2GB file issue
+    add rolling gzip support
+
+ -- Holden Karau <holden@pigscanfly.ca>  Fri, 25 Apr 2014 21:23:20 -0800
+
 cronolog (1.7-1) unstable; urgency=low
 
   * Merge in all the patches
