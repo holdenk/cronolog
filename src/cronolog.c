@@ -179,6 +179,7 @@ struct option long_options[] =
     { "set-gid",    required_argument,  NULL, 'g' },
     { "once-only",     no_argument,           NULL, 'o' },
     { "no-alarm",     no_argument,           NULL, 'n' },
+    { "lock",         no_argument,           NULL, 'L' },
     { "file-mode",     required_argument,           NULL, 'M' },
     { "dir-mode",     required_argument,           NULL, 'D' },
     { "help",          no_argument,           NULL, 'h' },
@@ -186,12 +187,15 @@ struct option long_options[] =
 };
 #endif
 
-static    char    handler[MAX_PATH];
-static    char    handler_arg[MAX_PATH];
-static    char    filename[MAX_PATH];
+static    char    handler[MAX_PATH+1];
+static    char    handler_arg[MAX_PATH+1];
+static    char    filename[MAX_PATH+1];
+//  .happypandas is 13 chars and null
+static    char    lockfilename[MAX_PATH+14];
 static    int   use_handler =0;
 static    int   use_handler_arg =0;
 static    int   i_am_handler =0;
+int     acquire_lock = 0;
 
 //
 // arguably we should use mode_t, but obscuring the type
@@ -230,11 +234,13 @@ main(int argc, char **argv)
     time_t    time_offset = 0;
     time_t    next_period = 0;
     int     log_fd = -1;
-    int     no_alarm =0;
+    int     no_alarm = 0;
 
     memset( handler, '\0', MAX_PATH );
     memset( handler_arg, '\0', MAX_PATH );
     memset( filename, '\0', MAX_PATH );
+    // 13 is length of .happypandas
+    memset( lockfilename, '\0', MAX_PATH+13 );
 
 #ifndef _WIN32
     while ((ch = getopt_long(argc, argv, short_options, long_options, NULL)) != EOF)
@@ -273,7 +279,9 @@ main(int argc, char **argv)
         linktype = S_IFLNK;
 #endif        
         break;
-        
+    case 'L':
+        acquire_lock = 1;
+        break;
     case 'P':
         if (linkname == NULL)
         {
@@ -610,6 +618,15 @@ handle_file()
     if( ! use_handler || !i_am_handler || handler[0] =='\0' || filename[0] == '\0' )
     {
         return;
+    }
+    if ( acquire_lock ) {
+      strncpy(lockfilename, filename, MAX_PATH);
+      strcat(lockfilename, ".happypandas");
+      int ret = open(lockfilename, OPEN_EXCLUSIVE, 'w');
+      // file already exists
+      if (ret == -1) {
+	exit(0);
+      }
     }
     exec_envp = malloc( sizeof( char *)*1);
     exec_envp[0] = NULL;
